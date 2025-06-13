@@ -38,24 +38,4 @@ $CXXWIN64 $CXXFLAGS -o "$BUILD_DIR/labyrinth_windows64.exe" $SRC_DIR/*.cpp -stat
 # Compile for Linux
 $CXX $CXXFLAGS -o "$BUILD_DIR/labyrinth_linux" $SRC_DIR/*.cpp -DLINUX
 
-if [ ! -d "$OSXCROSS" ]; then
-    echo "OSXCROSS is not installed. Please install it to compile for macOS."
-    cd /tmp
-    git clone https://github.com/tpoechtrager/osxcross.git
-    cd osxcross/tools
-    ./gen_sdk_package.sh /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
-    cd ..
-    wget https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz
-    cp ./MacOSX10.15.sdk.tar.xz tarballs/
-    UNATTENDED=1 ./build.sh
-    if [ $? -ne 0 ]; then
-        echo "Failed to build OSXCROSS."
-        exit 1
-    fi
-    echo "OSXCROSS installed successfully."
-fi
-
-# Compile for macOS
-$CXX $CXXFLAGS -o "$BUILD_DIR/labyrinth_mac" $SRC_DIR/*.cpp -DMACOS
-
 echo "Build complete. Binaries are in $BUILD_DIR/"
