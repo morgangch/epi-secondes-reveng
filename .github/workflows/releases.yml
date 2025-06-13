@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
@@ -25,10 +24,8 @@ jobs:
           - os: macos-latest
             target: macos
             artifact_name: maze-macos
-
     name: Build ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -77,6 +74,6 @@ jobs:
           tag_name: latest
           name: Latest Maze Build
           body: "Automatic build from push to `main`"
-          files: dist/**/*
+          files: dist/**/*  # récupère tous les artefacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
