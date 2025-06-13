@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+env:
+  SRC: 'src/main.cpp'  # Chemin vers le fichier source principal
+  BUILD_DIR: 'build'  # Répertoire de construction
+  DIST_DIR: 'dist'  # Répertoire de distribution
+  CMAKE_BUILD_TYPE: 'Release'  # Type de build CMake
+
 jobs:
   build:
     strategy:
@@ -45,19 +51,19 @@ jobs:
       - name: Build (Linux/macOS)
         if: matrix.os != 'windows-latest'
         run: |
-          mkdir build
-          g++ -O2 -o build/${{ matrix.artifact_name }} main.cpp
+          mkdir -p ${{env.BUILD_DIR}}
+          g++ -O2 -o ${{env.BUILD_DIR}}/${{ matrix.artifact_name }} ${{ env.SRC }}
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          cl /O2 /Fe:build\\${{ matrix.artifact_name }} main.cpp
+          cl /O2 /Fe:${{env.BUILD_DIR}}\\${{ matrix.artifact_name }} ${{ env.SRC }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: build/${{ matrix.artifact_name }}
+          path: ${{env.BUILD_DIR}}/${{ matrix.artifact_name }}
 
   release:
     needs: build
@@ -66,7 +72,7 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: ${{env.DIST_DIR}}
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -74,6 +80,6 @@ jobs:
           tag_name: latest
           name: Latest Maze Build
           body: "Automatic build from push to `main`"
-          files: dist/**/*  # récupère tous les artefacts
+          files: ${{env.DIST_DIR}}/**/*  # récupère tous les artefacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
