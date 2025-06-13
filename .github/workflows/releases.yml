@@ -5,11 +5,14 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write  # Allow actions to write to the repository contents
+
 env:
-  SRC: 'src/main.cpp'  # Chemin vers le fichier source principal
-  BUILD_DIR: 'build'  # Répertoire de construction
-  DIST_DIR: 'dist'  # Répertoire de distribution
-  CMAKE_BUILD_TYPE: 'Release'  # Type de build CMake
+  SRC: 'src/main.cpp'  # Path to the main source file
+  SRCWIN: 'src\\main.cpp'  # Path to the main source file using backslashes for Windows
+  BUILD_DIR: 'build'  # Build directory
+  DIST_DIR: 'dist'  # Distribution directory
 
 jobs:
   build:
