@@ -1,0 +1,82 @@
+name: Build and Release Binaries
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+            artifact_name: maze-linux-x64
+          - os: windows-latest
+            target: win32
+            msvc_arch: x86
+            artifact_name: maze-win32.exe
+          - os: windows-latest
+            target: win64
+            msvc_arch: x64
+            artifact_name: maze-win64.exe
+          - os: macos-latest
+            target: macos
+            artifact_name: maze-macos
+
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up build tools (Linux / macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          sudo apt-get update || true
+          sudo apt-get install -y build-essential cmake || true
+
+      - name: Set up MSVC (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
+
+      - name: Build (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          mkdir build
+          g++ -O2 -o build/${{ matrix.artifact_name }} main.cpp
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cl /O2 /Fe:build\\${{ matrix.artifact_name }} main.cpp
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: build/${{ matrix.artifact_name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Maze Build
+          body: "Automatic build from push to `main`"
+          files: dist/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
