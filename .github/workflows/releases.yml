@@ -10,6 +10,7 @@ permissions:
 
 env:
   SRC: 'src/main.cpp'
+  SRCWIN: 'src\\main.cpp'
   BUILD_DIR: 'build'
   DIST_DIR: 'dist'
 
@@ -70,29 +71,37 @@ jobs:
             -lsfml-graphics -lsfml-window -lsfml-system
 
       # Windows
-      - name: Install dependencies (Windows)
+      - name: Download SFML 2.6.2 for Windows (GCC 13.1)
         if: matrix.os == 'windows-latest'
         shell: powershell
         run: |
-          curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip
+          Invoke-WebRequest -Uri https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip -OutFile sfml.zip
           Expand-Archive sfml.zip -DestinationPath sfml
-          echo "SFML_PATH=$PWD\sfml\SFML-2.6.2" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
-          mkdir %BUILD_DIR%
-          g++ -std=c++17 -O2 %SRC% -o %BUILD_DIR%\${{ matrix.artifact_name }} ^
-            -I%SFML_PATH%\include ^
-            -L%SFML_PATH%\lib ^
+          mkdir build
+          g++ -std=c++17 -O2 ^
+            -Isfml\SFML-2.6.2\include ^
+            -Lsfml\SFML-2.6.2\lib ^
+            -o build\${{ matrix.artifact_name }} ^
+            ${{ env.SRCWIN }} ^
             -lsfml-graphics -lsfml-window -lsfml-system
+
+      - name: Copy DLLs (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          Copy-Item -Path sfml\SFML-2.6.2\bin\*.dll -Destination build\
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}
+          path: |
+            ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}
+            ${{ env.BUILD_DIR }}/*.dll
 
   release:
     needs: build
