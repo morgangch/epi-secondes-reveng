@@ -53,7 +53,7 @@ jobs:
       - name: Download SFML 2.6.2 (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          curl -L -o sfml.tar.gz https://www.sfml-dev.org/files/SFML-2.6.2-macOS-clang.tar.gz
+          curl -L -o sfml.tar.gz https://www.sfml-dev.org/files/SFML-2.6.2-macOS-clang-arm64.tar.gz
           mkdir -p sfml
           tar -xzf sfml.tar.gz -C sfml --strip-components=1
           echo "SFML_PATH=$(pwd)/sfml" >> $GITHUB_ENV
