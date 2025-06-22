@@ -24,7 +24,7 @@ jobs:
             artifact_name: maze-linux-x64
           - os: windows-latest
             target: windows
-            artifact_name: maze-win64.exe
+            artifact_name: maze-win64
           - os: macos-latest
             target: macos
             artifact_name: maze-macos
@@ -121,12 +121,12 @@ jobs:
       ########################
 
       - name: Upload binary
+        if: matrix.os != 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: |
             ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}
-            ${{ env.BUILD_DIR }}/*.dll
 
       - name: Upload zip archive (Windows only)
         if: matrix.os == 'windows-latest'
