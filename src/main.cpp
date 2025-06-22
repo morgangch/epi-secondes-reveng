@@ -13,6 +13,9 @@ enum Cell {
     WALL, PATH, START, END, PLAYER, SECRET
 };
 
+sf::Clock keyClock;
+const sf::Time keyDelay = sf::milliseconds(150); 
+
 bool konamiUnlocked = false;
 static std::vector<sf::Keyboard::Key> konamiCode = {
     sf::Keyboard::Up, sf::Keyboard::Up,
@@ -96,32 +99,40 @@ int main() {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-        }
 
-        // Mouvement joueur
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && canMove(playerPos.x, playerPos.y - 1)) {
-            playerPos.y--;
-        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && canMove(playerPos.x, playerPos.y + 1)) {
-            playerPos.y++;
-        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && canMove(playerPos.x - 1, playerPos.y)) {
-            playerPos.x--;
-        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && canMove(playerPos.x + 1, playerPos.y)) {
-            playerPos.x++;
-        }
-        if (event.type == sf::Event::KeyPressed) {
-            sf::Keyboard::Key key = event.key.code;
-            inputHistory.push_back(key);
+            if (event.type == sf::Event::Resized) {
+                window.setSize(sf::Vector2u(event.size.width, event.size.height));
+            }
 
-            if (inputHistory.size() > konamiCode.size()) {
-                inputHistory.erase(inputHistory.begin());
+            if (event.type == sf::Event::KeyPressed) {
+                if (keyClock.getElapsedTime() >= keyDelay) {
+                    sf::Keyboard::Key key = event.key.code;
+                    inputHistory.push_back(key);
+
+                    if (inputHistory.size() > konamiCode.size()) {
+                        inputHistory.erase(inputHistory.begin());
+                    }
+                
+                    if (inputHistory == konamiCode) {
+                        konamiUnlocked = true;
+                        std::cout << "🎮 Code Konami déverrouillé !\n";
+                        inputHistory.clear();
+                    }
+
+                    if (key == sf::Keyboard::Up && canMove(playerPos.x, playerPos.y - 1)) {
+                        playerPos.y--;
+                    } else if (key == sf::Keyboard::Down && canMove(playerPos.x, playerPos.y + 1)) {
+                        playerPos.y++;
+                    } else if (key == sf::Keyboard::Left && canMove(playerPos.x - 1, playerPos.y)) {
+                        playerPos.x--;
+                    } else if (key == sf::Keyboard::Right && canMove(playerPos.x + 1, playerPos.y)) {
+                        playerPos.x++;
+                    }
+                    keyClock.restart();
+                }
             }
         }
 
-        if (inputHistory == konamiCode) {
-            konamiUnlocked = true;
-            std::cout << "🎮 Code Konami déverrouillé !\n";
-            inputHistory.clear();
-        }
 
         // Affichage
         window.clear();
