@@ -36,7 +36,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Linux
+      ########################
+      #        Linux         #
+      ########################
+
       - name: Install dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -46,12 +49,17 @@ jobs:
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          mkdir -p ${{env.BUILD_DIR}}
-          g++ -std=c++17 -O2 -o ${{env.BUILD_DIR}}/${{ matrix.artifact_name }} ${{ env.SRC }} \
+          mkdir -p ${{ env.BUILD_DIR }}
+          g++ -std=c++17 -O2 \
+            -o ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }} \
+            ${{ env.SRC }} \
             -lsfml-graphics -lsfml-window -lsfml-system
 
-      # macOS
-      - name: Download SFML 2.6.2 (macOS)
+      ########################
+      #        macOS         #
+      ########################
+
+      - name: Download SFML (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           curl -L -o sfml.tar.gz https://www.sfml-dev.org/files/SFML-2.6.2-macOS-clang-arm64.tar.gz
@@ -70,18 +78,24 @@ jobs:
             ${{ env.SRC }} \
             -lsfml-graphics -lsfml-window -lsfml-system
 
-      # Windows
-      - name: Download SFML 2.6.2 for Windows (GCC 13.1)
-        if: matrix.os == 'windows-latest'
-        shell: cmd
-        run: |
-          curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip
-          powershell -Command "Expand-Archive -Path sfml.zip -DestinationPath sfml"
+      ########################
+      #       Windows        #
+      ########################
 
-      - name: Build (Windows)
+      - name: Download SFML & MinGW (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: |
+          curl -L -o mingw64.zip https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip 
+          curl -L -o mingw64.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip sfml.zip
+          Expand-Archive -Path sfml.zip -DestinationPath sfml
+          Expand-Archive -Path mingw64.zip -DestinationPath sfml/SFML-2.6.2/mingw64
+
+      - name: Build (Windows with MinGW 13.1.0)
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
+          set PATH=%cd%\sfml\SFML-2.6.2\mingw64\bin;%PATH%
           mkdir build
           g++ -std=c++17 -O2 ^
             -Isfml\SFML-2.6.2\include ^
@@ -92,16 +106,35 @@ jobs:
 
       - name: Copy DLLs (Windows)
         if: matrix.os == 'windows-latest'
+        shell: powershell
         run: |
           Copy-Item -Path sfml\SFML-2.6.2\bin\*.dll -Destination build\
+          Copy-Item -Path sfml\SFML-2.6.2\mingw64\bin\*.dll -Destination build\
 
-      - name: Upload artifact
+      - name: Package Windows release
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: |
+          Compress-Archive -Path build\* -DestinationPath ${{ env.BUILD_DIR }}\${{ matrix.artifact_name }}.zip
+
+      ########################
+      #   Upload Artifacts   #
+      ########################
+
+      - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: |
             ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}
             ${{ env.BUILD_DIR }}/*.dll
+
+      - name: Upload zip archive (Windows only)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}-portable
+          path: ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}.zip
 
   release:
     needs: build
@@ -112,7 +145,7 @@ jobs:
         with:
           path: ${{ env.DIST_DIR }}
 
-      - name: Create release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
