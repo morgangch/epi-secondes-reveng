@@ -6,13 +6,12 @@ on:
       - main
 
 permissions:
-  contents: write  # Allow actions to write to the repository contents
+  contents: write
 
 env:
-  SRC: 'src/main.cpp'  # Path to the main source file
-  SRCWIN: 'src\\main.cpp'  # Path to the main source file using backslashes for Windows
-  BUILD_DIR: 'build'  # Build directory
-  DIST_DIR: 'dist'  # Distribution directory
+  SRC: 'src/main.cpp'
+  BUILD_DIR: 'build'
+  DIST_DIR: 'dist'
 
 jobs:
   build:
@@ -23,51 +22,71 @@ jobs:
             target: linux
             artifact_name: maze-linux-x64
           - os: windows-latest
-            target: win32
-            msvc_arch: x86
-            artifact_name: maze-win32.exe
-          - os: windows-latest
-            target: win64
-            msvc_arch: x64
+            target: windows
             artifact_name: maze-win64.exe
           - os: macos-latest
             target: macos
             artifact_name: maze-macos
+
     name: Build ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up build tools (Linux / macOS)
-        if: matrix.os != 'windows-latest'
+      # Linux
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get update || true
-          sudo apt-get install -y build-essential cmake || true
+          sudo apt-get update
+          sudo apt-get install -y libsfml-dev
 
-      - name: Set up MSVC (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: ${{ matrix.msvc_arch }}
-
-      - name: Build (Linux/macOS)
-        if: matrix.os != 'windows-latest'
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p ${{env.BUILD_DIR}}
-          g++ -O2 -o ${{env.BUILD_DIR}}/${{ matrix.artifact_name }} ${{ env.SRC }}
+          g++ -std=c++17 -O2 -o ${{env.BUILD_DIR}}/${{ matrix.artifact_name }} ${{ env.SRC }} \
+            -lsfml-graphics -lsfml-window -lsfml-system
+
+      # macOS
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install sfml
+
+      - name: Build (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p ${{env.BUILD_DIR}}
+          g++ -std=c++17 -O2 -I/opt/homebrew/include -L/opt/homebrew/lib \
+            -o ${{env.BUILD_DIR}}/${{ matrix.artifact_name }} ${{ env.SRC }} \
+            -lsfml-graphics -lsfml-window -lsfml-system
+
+      # Windows
+      - name: Install dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: |
+          curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip
+          Expand-Archive sfml.zip -DestinationPath sfml
+          echo "SFML_PATH=$PWD\sfml\SFML-2.6.2" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
+        shell: cmd
         run: |
-          mkdir build
-          cl /O2 /EHsc /Fe:${{env.BUILD_DIR}}\\${{ matrix.artifact_name }} ${{ env.SRC }}
+          mkdir %BUILD_DIR%
+          g++ -std=c++17 -O2 %SRC% -o %BUILD_DIR%\${{ matrix.artifact_name }} ^
+            -I%SFML_PATH%\include ^
+            -L%SFML_PATH%\lib ^
+            -lsfml-graphics -lsfml-window -lsfml-system
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: ${{env.BUILD_DIR}}/${{ matrix.artifact_name }}
+          path: ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}
 
   release:
     needs: build
@@ -76,7 +95,7 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ${{env.DIST_DIR}}
+          path: ${{ env.DIST_DIR }}
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -84,6 +103,6 @@ jobs:
           tag_name: latest
           name: Latest Maze Build
           body: "Automatic build from push to `main`"
-          files: ${{env.DIST_DIR}}/**/*  # récupère tous les artefacts
+          files: ${{ env.DIST_DIR }}/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
