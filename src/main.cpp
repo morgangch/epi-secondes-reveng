@@ -39,6 +39,14 @@ int mazeData[ROWS][COLS] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
+struct Vector2iComparator {
+    bool operator()(const sf::Vector2i& lhs, const sf::Vector2i& rhs) const {
+        if (lhs.y != rhs.y)
+            return lhs.y < rhs.y;
+        return lhs.x < rhs.x;
+    }
+};
+
 sf::Vector2i playerPos = {0, 0};
 sf::Vector2i endPos = {14, 9};
 
@@ -63,7 +71,7 @@ bool canMove(int x, int y) {
 }
 
 int main() {
-    std::map<sf::Vector2i, Cell> discoveredSecretZones;
+    std::map<sf::Vector2i, Cell, Vector2iComparator> discoveredSecretZones;
     int totalSecretZones = 0;
 
     // conversion
@@ -107,12 +115,12 @@ int main() {
             if (inputHistory.size() > konamiCode.size()) {
                 inputHistory.erase(inputHistory.begin());
             }
+        }
 
-            if (inputHistory == konamiCode) {
-                konamiUnlocked = true;
-                std::cout << "🎮 Code Konami déverrouillé !\n";
-                inputHistory.clear();
-            }
+        if (inputHistory == konamiCode) {
+            konamiUnlocked = true;
+            std::cout << "🎮 Code Konami déverrouillé !\n";
+            inputHistory.clear();
         }
 
         // Affichage
