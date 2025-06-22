@@ -50,17 +50,23 @@ jobs:
             -lsfml-graphics -lsfml-window -lsfml-system
 
       # macOS
-      - name: Install dependencies (macOS)
+      - name: Download SFML 2.6.2 (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          brew install sfml
+          curl -L -o sfml.tar.gz https://www.sfml-dev.org/files/SFML-2.6.2-macOS-clang.tar.gz
+          mkdir -p sfml
+          tar -xzf sfml.tar.gz -C sfml --strip-components=1
+          echo "SFML_PATH=$(pwd)/sfml" >> $GITHUB_ENV
 
       - name: Build (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          mkdir -p ${{env.BUILD_DIR}}
-          g++ -std=c++17 -O2 -I/opt/homebrew/include -L/opt/homebrew/lib \
-            -o ${{env.BUILD_DIR}}/${{ matrix.artifact_name }} ${{ env.SRC }} \
+          mkdir -p ${{ env.BUILD_DIR }}
+          g++ -std=c++17 -O2 \
+            -I$SFML_PATH/include \
+            -L$SFML_PATH/lib \
+            -o ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }} \
+            ${{ env.SRC }} \
             -lsfml-graphics -lsfml-window -lsfml-system
 
       # Windows
