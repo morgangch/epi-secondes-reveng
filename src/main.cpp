@@ -49,7 +49,7 @@ sf::Color getColor(Cell cell) {
         case START: return sf::Color::Green;
         case END: return sf::Color::Red;
         case PLAYER: return sf::Color::Blue;
-        case SECRET: return sf::Color::White;
+        case SECRET: return sf::Color::Black;
     }
     return sf::Color::Magenta;
 }
