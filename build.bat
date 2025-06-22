@@ -50,6 +50,7 @@ echo [*] Copie des DLLs MinGW...
 copy mingw64\bin\*.dll %BUILD_DIR% >nul
 
 echo [*] Création de l’archive...
+if exist %ARTIFACT_NAME%-portable.zip del %ARTIFACT_NAME%-portable.zip
 powershell -Command "Compress-Archive -Path %BUILD_DIR%\* -DestinationPath %ARTIFACT_NAME%-portable.zip"
 
 echo [✓] Compilation et empaquetage terminés avec succès.
