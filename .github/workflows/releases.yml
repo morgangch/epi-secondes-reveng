@@ -73,10 +73,10 @@ jobs:
       # Windows
       - name: Download SFML 2.6.2 for Windows (GCC 13.1)
         if: matrix.os == 'windows-latest'
-        shell: powershell
+        shell: cmd
         run: |
-          Invoke-WebRequest -Uri https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip -OutFile sfml.zip
-          Expand-Archive sfml.zip -DestinationPath sfml
+          curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip
+          powershell -Command "Expand-Archive -Path sfml.zip -DestinationPath sfml"
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
