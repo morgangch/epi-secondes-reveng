@@ -87,8 +87,7 @@ jobs:
         shell: cmd
         run: |
           curl -L -o mingw64.zip https://github.com/brechtsanders/winlibs_mingw/releases/download/13.1.0-16.0.5-11.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-13.1.0-mingw-w64msvcrt-11.0.0-r5.zip 
-          curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-13.1.0-mingw-64-bit.zip
-          powershell -Command Expand-Archive -Path sfml.zip -DestinationPath sfml
+          powershell -Command Expand-Archive -Path .\SFML-2.6.2.zip -DestinationPath sfml
           powershell -Command Expand-Archive -Path mingw64.zip -DestinationPath .
 
       - name: Build (Windows with MinGW 13.1.0)
