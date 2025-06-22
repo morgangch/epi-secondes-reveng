@@ -6,16 +6,28 @@ const int CELL_SIZE = 40;
 const int ROWS = 10;
 const int COLS = 15;
 
-// enum déjà défini
+int hiddenScore = 1337;
+std::string hiddenMessage = "Bravo, vous êtes curieux.";
+
 enum Cell {
-    WALL, PATH, START, END, PLAYER
+    WALL, PATH, START, END, PLAYER, SECRET
 };
+
+bool konamiUnlocked = false;
+static std::vector<sf::Keyboard::Key> konamiCode = {
+    sf::Keyboard::Up, sf::Keyboard::Up,
+    sf::Keyboard::Down, sf::Keyboard::Down,
+    sf::Keyboard::Left, sf::Keyboard::Right,
+    sf::Keyboard::Left, sf::Keyboard::Right,
+    sf::Keyboard::B, sf::Keyboard::A
+};
+static std::vector<sf::Keyboard::Key> inputHistory;
 
 std::vector<std::vector<Cell>> maze;
 
 // tableau temporaire en int
 int mazeData[ROWS][COLS] = {
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {1,0,0,5,0,0,5,0,0,0,0,0,0,0,0},
     {1,1,1,1,0,1,1,1,1,1,1,0,1,1,1},
     {0,0,0,1,0,1,0,0,0,0,1,0,1,0,1},
     {0,1,1,1,1,1,0,1,1,0,1,1,1,0,1},
@@ -23,7 +35,7 @@ int mazeData[ROWS][COLS] = {
     {0,1,1,1,0,1,0,1,1,1,1,1,1,0,1},
     {0,0,0,1,0,1,0,0,0,0,0,0,0,0,1},
     {1,1,1,1,0,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {1,5,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
@@ -37,8 +49,13 @@ sf::Color getColor(Cell cell) {
         case START: return sf::Color::Green;
         case END: return sf::Color::Red;
         case PLAYER: return sf::Color::Blue;
+        case SECRET: return sf::Color::White;
     }
     return sf::Color::Magenta;
+}
+
+void secretEnding() {
+    std::cout << "✨ Vous avez découvert la fin secrète !\n";
 }
 
 bool canMove(int x, int y) {
@@ -46,10 +63,15 @@ bool canMove(int x, int y) {
 }
 
 int main() {
+    std::map<sf::Vector2i, Cell> discoveredSecretZones;
+    int totalSecretZones = 0;
+
     // conversion
     for (int y = 0; y < ROWS; ++y) {
         std::vector<Cell> row;
         for (int x = 0; x < COLS; ++x) {
+            if (mazeData[y][x] == SECRET)
+                totalSecretZones++;
             row.push_back(static_cast<Cell>(mazeData[y][x]));
         }
         maze.push_back(row);
@@ -78,6 +100,20 @@ int main() {
         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && canMove(playerPos.x + 1, playerPos.y)) {
             playerPos.x++;
         }
+        if (event.type == sf::Event::KeyPressed) {
+            sf::Keyboard::Key key = event.key.code;
+            inputHistory.push_back(key);
+
+            if (inputHistory.size() > konamiCode.size()) {
+                inputHistory.erase(inputHistory.begin());
+            }
+
+            if (inputHistory == konamiCode) {
+                konamiUnlocked = true;
+                std::cout << "🎮 Code Konami déverrouillé !\n";
+                inputHistory.clear();
+            }
+        }
 
         // Affichage
         window.clear();
@@ -96,6 +132,14 @@ int main() {
         }
 
         window.display();
+        if (maze[playerPos.y][playerPos.x] == static_cast<Cell>(9)) {
+            if (discoveredSecretZones.find(playerPos) == discoveredSecretZones.end()) {
+                discoveredSecretZones[playerPos] = SECRET;
+            }   
+        }
+        if (discoveredSecretZones.size() == totalSecretZones) {
+            std::cout << "✨ Vous avez découvert toutes les zones secrètes !\n";
+        }
 
         if (playerPos == endPos) {
             std::cout << "🎉 Félicitations, vous avez terminé le labyrinthe !\n";
