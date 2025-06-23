@@ -8,6 +8,7 @@ const int COLS = 15;
 
 sf::Font font;
 sf::Text text;
+int developerMode = 0;
 
 int hiddenScore = 1337;
 std::string hiddenMessage = "Bravo, vous êtes curieux.";
@@ -28,6 +29,14 @@ static std::vector<sf::Keyboard::Key> konamiCode = {
     sf::Keyboard::B, sf::Keyboard::A
 };
 static std::vector<sf::Keyboard::Key> inputHistory;
+
+void __attribute__((used)) ultraSecretEnding() {
+    std::cout << "Vous avez percé les abysses de l'exécutable...\n";
+}
+
+static std::vector<sf::Keyboard::Key> rickrollCode = {
+    sf::Keyboard::R, sf::Keyboard::I, sf::Keyboard::C, sf::Keyboard::K
+};
 
 std::vector<std::vector<Cell>> maze;
 
@@ -87,18 +96,24 @@ void displayToScreen(const std::wstring& message, sf::RenderWindow& window) {
 
 }
 
+void text_creation() {
+    if (std::getenv("DEV_MODE")) {
+        developerMode = std::stoi(std::getenv("DEV_MODE"));
+    }
+    if (!font.loadFromFile("arial.ttf")) {
+        std::cerr << "Erreur de chargement de la police.\n";
+        return;
+    }
+    text.setFont(font);
+    text.setCharacterSize(36);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(ROWS * CELL_SIZE / 2 - 100, COLS * CELL_SIZE / 2 - 50);
+}
+
 int main() {
     std::map<sf::Vector2i, Cell, Vector2iComparator> discoveredSecretZones;
     int totalSecretZones = 0;
-    if (!font.loadFromFile("arial.ttf")) {
-        std::cerr << "Erreur de chargement de la police.\n";
-        return 1;
-    }
-    text.setFont(font);
-    text.setCharacterSize(24);
-    text.setFillColor(sf::Color::White);
-    text.setPosition(ROWS * CELL_SIZE / 2 - 100, COLS * CELL_SIZE / 2 - 50);
-
+    text_creation();
     // conversion
     for (int y = 0; y < ROWS; ++y) {
         std::vector<Cell> row;
@@ -116,6 +131,10 @@ int main() {
 
     maze[playerPos.y][playerPos.x] = START;
     maze[endPos.y][endPos.x] = END;
+
+    if (developerMode == 42) {
+        std::cout << "Developer mode activé. Spoilers ahead. UwU est le keyword ultime\n";
+    }
 
     while (window.isOpen()) {
         sf::Event event;
@@ -140,6 +159,10 @@ int main() {
                         konamiUnlocked = true;
                         displayToScreen(L"Code Konami déverrouillé !", window);
                         inputHistory.clear();
+                    }
+
+                    if (inputHistory == rickrollCode) {
+                        displayToScreen(L"Jamais tu ne me Rickrolleras !", window);
                     }
 
                     if (key == sf::Keyboard::Escape) {
