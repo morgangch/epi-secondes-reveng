@@ -12,7 +12,7 @@ Vous partez d’un **exécutable** (compilé) d’un jeu simple en apparence… 
 * Des variables jamais affichées
 * Des comportements inattendus
 
-Votre mission : **comprendre et révéler tous les secrets du jeu**, à la fois **en jouant**, puis **en analysant le binaire avec Ghidra**.
+Votre mission : **comprendre et révéler tous les secrets du jeu**, à la fois **en jouant**, puis **en analysant le binaire avec des outils dédiés**.
 
 ---
 
