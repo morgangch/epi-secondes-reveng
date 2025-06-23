@@ -4,8 +4,8 @@
 SRC="src/main.cpp"
 BUILD_DIR="build"
 ARTIFACT_NAME="maze-linux"
-SFML_URL="https://www.sfml-dev.org/files/SFML-2.6.1-linux-gcc-64-bit.tar.gz"
-SFML_ARCHIVE="SFML-2.6.1-linux-gcc-64-bit.tar.gz"
+SFML_URL="https://www.sfml-dev.org/files/SFML-2.6.2-linux-gcc-64-bit.tar.gz"
+SFML_ARCHIVE="SFML-2.6.2-linux.tar.gz"
 SFML_DIR="sfml"
 
 # === Téléchargement de SFML ===
