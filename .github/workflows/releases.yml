@@ -55,6 +55,16 @@ jobs:
             ${{ env.SRC }} \
             -lsfml-graphics -lsfml-window -lsfml-system
 
+      - name: Copy font file (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cp ./arial.ttf ${{ env.BUILD_DIR }}/arial.ttf
+
+      - name: Package Linux release
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          tar -czf ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}.tar.gz -C ${{ env.BUILD_DIR }} .
+
       ########################
       #        macOS         #
       ########################
@@ -77,6 +87,16 @@ jobs:
             -o ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }} \
             ${{ env.SRC }} \
             -lsfml-graphics -lsfml-window -lsfml-system
+
+      - name: Copy font file (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cp ./arial.ttf ${{ env.BUILD_DIR }}/arial.ttf
+
+      - name: Package macOS release
+        if: matrix.os == 'macos-latest'
+        run: |
+          tar -czf ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}.tar.gz -C ${{ env.BUILD_DIR }} .
 
       ########################
       #       Windows        #
@@ -109,6 +129,7 @@ jobs:
         run: |
           Copy-Item -Path sfml\SFML-2.6.2\bin\*.dll -Destination build\
           Copy-Item -Path .\mingw64\bin\*.dll -Destination build\
+          Copy-Item -Path .\arial.ttf -Destination build\
 
       - name: Package Windows release
         if: matrix.os == 'windows-latest'
@@ -126,7 +147,7 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: |
-            ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}
+            ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}.tar.gz
 
       - name: Upload zip archive (Windows only)
         if: matrix.os == 'windows-latest'
