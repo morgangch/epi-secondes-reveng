@@ -1,41 +1,48 @@
 #!/bin/bash
 
-SRC_DIR="src"
+# === Configuration ===
+SRC="src/main.cpp"
 BUILD_DIR="build"
-CXX="g++"
-CXXFLAGS="-std=c++17 -O2"
+ARTIFACT_NAME="maze-linux"
+SFML_URL="https://www.sfml-dev.org/files/SFML-2.6.1-linux-gcc-64-bit.tar.gz"
+SFML_ARCHIVE="SFML-2.6.1-linux-gcc-64-bit.tar.gz"
+SFML_DIR="sfml"
 
-CXXWIN32="i686-w64-mingw32-g++"
-CXXWIN64="x86_64-w64-mingw32-g++"
+# === Téléchargement de SFML ===
+echo "[*] Téléchargement de SFML..."
+if [ ! -d "$SFML_DIR" ]; then
+    mkdir -p "$SFML_DIR"
+    if [ ! -f "$SFML_ARCHIVE" ]; then
+        curl -L -o "$SFML_ARCHIVE" "$SFML_URL"
+    fi
+    tar -xzf "$SFML_ARCHIVE" -C "$SFML_DIR" --strip-components=1
+else
+    echo "[*] SFML déjà téléchargé."
+fi
 
-OSXCROSS="/opt/osxcross/target/bin/o64-clang++"
-
+# === Compilation ===
+echo "[*] Compilation du projet..."
+rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-if [ ! -d "$SRC_DIR" ]; then
-    echo "Source directory '$SRC_DIR' does not exist."
+g++ -std=c++17 -O2 \
+    -I"$SFML_DIR/include" \
+    -L"$SFML_DIR/lib" \
+    "$SRC" -o "$BUILD_DIR/$ARTIFACT_NAME" \
+    -lsfml-graphics -lsfml-window -lsfml-system
+
+if [ $? -ne 0 ]; then
+    echo "[!] La compilation a échoué."
     exit 1
 fi
 
-if ! command -v "$CXXWIN32" >/dev/null || ! command -v "$CXXWIN64" >/dev/null; then
-    echo "Required cross-compilers for Windows are not installed."
-    sudo apt-get install mingw-w64 -y
-    if [ $? -ne 0 ]; then
-        echo "Failed to install mingw-w64."
-        exit 1
-    fi
-    CXXWIN32="i686-w64-mingw32-g++"
-    CXXWIN64="x86_64-w64-mingw32-g++"
-    echo "Cross-compilers installed successfully."
-fi
+# === Packaging (zip) ===
+echo "[*] Création de l’archive..."
+ZIP_NAME="$ARTIFACT_NAME-portable.zip"
+rm -f "$ZIP_NAME"
+cd "$BUILD_DIR" || exit 1
+zip -r "../$ZIP_NAME" .
+cd ..
 
-# Compile for Windows 32-bit
-$CXXWIN32 $CXXFLAGS -o "$BUILD_DIR/labyrinth_windows32.exe" $SRC_DIR/*.cpp -static -DWIN32
-
-# Compile for Windows 64-bit
-$CXXWIN64 $CXXFLAGS -o "$BUILD_DIR/labyrinth_windows64.exe" $SRC_DIR/*.cpp -static -DWIN64
-
-# Compile for Linux
-$CXX $CXXFLAGS -o "$BUILD_DIR/labyrinth_linux" $SRC_DIR/*.cpp -DLINUX
-
-echo "Build complete. Binaries are in $BUILD_DIR/"
+echo "[✓] Compilation et empaquetage terminés avec succès."
+exit 0
