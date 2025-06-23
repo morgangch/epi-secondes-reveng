@@ -21,7 +21,7 @@ Votre mission : **comprendre et révéler tous les secrets du jeu**, à la fois 
 * Le fichier exécutable : `maze-win64.exe` (pour Windows)
 * Aucun accès au code source
 * Outils recommandés :
-  * Ghidra (déjà installé sur vos machines)
+  * [Ghidra, Binary Ninja](https://dogbolt.org) (accessibles en ligne)
   * Bloc-notes ou fichier `.txt` pour noter vos observations
 
 ---
