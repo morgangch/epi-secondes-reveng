@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 const int CELL_SIZE = 40 * 2;
 const int ROWS = 10;
@@ -33,10 +34,6 @@ static std::vector<sf::Keyboard::Key> inputHistory;
 void __attribute__((used)) ultraSecretEnding() {
     std::cout << "Vous avez percé les abysses de l'exécutable...\n";
 }
-
-static std::vector<sf::Keyboard::Key> rickrollCode = {
-    sf::Keyboard::R, sf::Keyboard::I, sf::Keyboard::C, sf::Keyboard::K
-};
 
 std::vector<std::vector<Cell>> maze;
 
@@ -153,8 +150,12 @@ int main() {
                     sf::Keyboard::Key key = event.key.code;
                     inputHistory.push_back(key);
 
+                    for (const auto& k : inputHistory) {
+                        std::cout << "Input: " << k << std::endl;
+                    }
+
                     if (inputHistory.size() > konamiCode.size()) {
-                        inputHistory.erase(inputHistory.begin());
+                        inputHistory.clear();
                     }
                 
                     if (inputHistory == konamiCode) {
@@ -165,6 +166,11 @@ int main() {
 
                     if (inputHistory == rickRollCode) {
                         displayToScreen(L"Jamais tu ne me Rickrolleras !", window);
+                        inputHistory.clear();
+                    }
+                    if (std::find(konamiCode.begin(), konamiCode.end(), key) == konamiCode.end() &&
+                        std::find(rickRollCode.begin(), rickRollCode.end(), key) == rickRollCode.end()) {
+                        inputHistory.clear();
                     }
 
                     if (key == sf::Keyboard::Escape) {
