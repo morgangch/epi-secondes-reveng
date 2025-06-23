@@ -2,9 +2,12 @@
 #include <vector>
 #include <iostream>
 
-const int CELL_SIZE = 40;
+const int CELL_SIZE = 40 * 4;
 const int ROWS = 10;
 const int COLS = 15;
+
+sf::Font font;
+sf::Text text;
 
 int hiddenScore = 1337;
 std::string hiddenMessage = "Bravo, vous êtes curieux.";
@@ -73,16 +76,36 @@ bool canMove(int x, int y) {
     return x >= 0 && x < COLS && y >= 0 && y < ROWS && maze[y][x] != WALL;
 }
 
+void displayToScreen(const std::wstring& message, sf::RenderWindow& window) {
+    text.setString(message);
+    window.clear();
+    window.draw(text);
+    window.display();
+    sf::sleep(sf::seconds(2)); // Affiche le message pendant 2 secondes
+    text.setString(""); // Efface le message
+    window.clear();
+
+}
+
 int main() {
     std::map<sf::Vector2i, Cell, Vector2iComparator> discoveredSecretZones;
     int totalSecretZones = 0;
+    if (!font.loadFromFile("arial.ttf")) {
+        std::cerr << "Erreur de chargement de la police.\n";
+        return 1;
+    }
+    text.setFont(font);
+    text.setCharacterSize(24);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(ROWS * CELL_SIZE / 2 - 100, COLS * CELL_SIZE / 2 - 50);
 
     // conversion
     for (int y = 0; y < ROWS; ++y) {
         std::vector<Cell> row;
         for (int x = 0; x < COLS; ++x) {
-            if (mazeData[y][x] == SECRET)
+            if (mazeData[y][x] == SECRET) {
                 totalSecretZones++;
+            }
             row.push_back(static_cast<Cell>(mazeData[y][x]));
         }
         maze.push_back(row);
@@ -115,10 +138,13 @@ int main() {
                 
                     if (inputHistory == konamiCode) {
                         konamiUnlocked = true;
-                        std::cout << "🎮 Code Konami déverrouillé !\n";
+                        displayToScreen(L"Code Konami déverrouillé !", window);
                         inputHistory.clear();
                     }
 
+                    if (key == sf::Keyboard::Escape) {
+                        window.close();
+                    }
                     if (key == sf::Keyboard::Up && canMove(playerPos.x, playerPos.y - 1)) {
                         playerPos.y--;
                     } else if (key == sf::Keyboard::Down && canMove(playerPos.x, playerPos.y + 1)) {
@@ -151,17 +177,18 @@ int main() {
         }
 
         window.display();
-        if (maze[playerPos.y][playerPos.x] == static_cast<Cell>(9)) {
+        if (maze[playerPos.y][playerPos.x] == static_cast<Cell>(5)) {
             if (discoveredSecretZones.find(playerPos) == discoveredSecretZones.end()) {
                 discoveredSecretZones[playerPos] = SECRET;
             }   
         }
         if (discoveredSecretZones.size() == totalSecretZones) {
-            std::cout << "✨ Vous avez découvert toutes les zones secrètes !\n";
+            displayToScreen(L"Vous avez découvert toutes les zones secrètes !", window);
+            discoveredSecretZones.clear();
         }
 
         if (playerPos == endPos) {
-            std::cout << "🎉 Félicitations, vous avez terminé le labyrinthe !\n";
+            displayToScreen(L"Vous avez atteint la fin du labyrinthe !", window);
             sf::sleep(sf::seconds(2));
             window.close();
         }
