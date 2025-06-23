@@ -60,10 +60,12 @@ jobs:
         run: |
           cp ./arial.ttf ${{ env.BUILD_DIR }}/arial.ttf
 
-      - name: Package Linux release
+      - name: Package Linux release (safe)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          tar -czf ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}.tar.gz -C ${{ env.BUILD_DIR }} .
+          mkdir -p dist_tmp
+          cp -r ${{ env.BUILD_DIR }}/* dist_tmp/
+          tar -czf ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}.tar.gz -C dist_tmp .
 
       ########################
       #        macOS         #
@@ -96,7 +98,9 @@ jobs:
       - name: Package macOS release
         if: matrix.os == 'macos-latest'
         run: |
-          tar -czf ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}.tar.gz -C ${{ env.BUILD_DIR }} .
+          mkdir -p dist_tmp
+          cp -r ${{ env.BUILD_DIR }}/* dist_tmp/
+          tar -czf ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}.tar.gz -C dist_tmp .
 
       ########################
       #       Windows        #
