@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 
-const int CELL_SIZE = 40 * 4;
+const int CELL_SIZE = 40 * 2;
 const int ROWS = 10;
 const int COLS = 15;
 
@@ -76,15 +76,18 @@ bool canMove(int x, int y) {
     return x >= 0 && x < COLS && y >= 0 && y < ROWS && maze[y][x] != WALL;
 }
 
+static std::vector<sf::Keyboard::Key> rickRollCode = {
+    sf::Keyboard::R, sf::Keyboard::I, sf::Keyboard::C, sf::Keyboard::K
+};
+
 void displayToScreen(const std::wstring& message, sf::RenderWindow& window) {
     text.setString(message);
     window.clear();
     window.draw(text);
     window.display();
-    sf::sleep(sf::seconds(2)); // Affiche le message pendant 2 secondes
-    text.setString(""); // Efface le message
+    sf::sleep(sf::seconds(2));
+    text.setString("");
     window.clear();
-
 }
 
 int main() {
@@ -99,7 +102,6 @@ int main() {
     text.setFillColor(sf::Color::White);
     text.setPosition(ROWS * CELL_SIZE / 2 - 100, COLS * CELL_SIZE / 2 - 50);
 
-    // conversion
     for (int y = 0; y < ROWS; ++y) {
         std::vector<Cell> row;
         for (int x = 0; x < COLS; ++x) {
@@ -111,7 +113,7 @@ int main() {
         maze.push_back(row);
     }
 
-    sf::RenderWindow window(sf::VideoMode(COLS * CELL_SIZE, ROWS * CELL_SIZE), "Maze Game", sf::Style::Close);
+    sf::RenderWindow window(sf::VideoMode(COLS * CELL_SIZE, ROWS * CELL_SIZE), "Maze Game", sf::Style::Close | sf::Style::Resize);
     window.setFramerateLimit(60);
 
     maze[playerPos.y][playerPos.x] = START;
