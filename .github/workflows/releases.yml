@@ -53,7 +53,8 @@ jobs:
           g++ -std=c++17 -O2 \
             -o ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }} \
             ${{ env.SRC }} \
-            -lsfml-graphics -lsfml-window -lsfml-system
+            -lsfml-graphics -lsfml-window -lsfml-system \
+            -g3
 
       - name: Copy font file (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -88,7 +89,8 @@ jobs:
             -L$SFML_PATH/lib \
             -o ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }} \
             ${{ env.SRC }} \
-            -lsfml-graphics -lsfml-window -lsfml-system
+            -lsfml-graphics -lsfml-window -lsfml-system \
+            -g3
 
       - name: Copy font file (macOS)
         if: matrix.os == 'macos-latest'
@@ -125,7 +127,8 @@ jobs:
             -Lsfml\SFML-2.6.2\lib ^
             -o build\${{ matrix.artifact_name }} ^
             ${{ env.SRCWIN }} ^
-            -lsfml-graphics -lsfml-window -lsfml-system
+            -lsfml-graphics -lsfml-window -lsfml-system ^
+            -g3
 
       - name: Copy DLLs (Windows)
         if: matrix.os == 'windows-latest'
