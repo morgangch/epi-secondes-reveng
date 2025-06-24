@@ -29,7 +29,8 @@ g++ -std=c++17 -O2 \
     -I"$SFML_DIR/include" \
     -L"$SFML_DIR/lib" \
     "$SRC" -o "$BUILD_DIR/$ARTIFACT_NAME" \
-    -lsfml-graphics -lsfml-window -lsfml-system
+    -lsfml-graphics -lsfml-window -lsfml-system \
+    -g3 
 
 if [ $? -ne 0 ]; then
     echo "[!] La compilation a échoué."

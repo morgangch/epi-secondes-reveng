@@ -36,7 +36,8 @@ g++ -std=c++17 -O2 ^
     -Lsfml\SFML-2.6.2\lib ^
     -o %BUILD_DIR%\%ARTIFACT_NAME%.exe ^
     %SRC% ^
-    -lsfml-graphics -lsfml-window -lsfml-system
+    -lsfml-graphics -lsfml-window -lsfml-system ^
+    -g3
 
 if %ERRORLEVEL% neq 0 (
     echo [!] La compilation a échoué.
