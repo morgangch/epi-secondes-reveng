@@ -72,10 +72,9 @@ Testez les idées suivantes :
 
 ## 🛠️ Étape 1 : Importer le binaire
 
-1. Ouvrez **Ghidra**.
-2. Créez un projet.
-3. Importez le binaire du jeu.
-4. Lancez l’analyse automatique (`YES` à toutes les options par défaut).
+1. Ouvrez [**Dogbolt**](https://dogbolt.org).
+2. Importez le binaire du jeu.
+3. Regardez les options, cochez Binary Ninja et Ghidra (surtout) car ils seront les plus bavards.
 
 ---
 

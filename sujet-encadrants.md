@@ -22,7 +22,14 @@ Votre mission : **comprendre et révéler tous les secrets du jeu**, à la fois 
 * Aucun accès au code source
 * Outils recommandés :
   * [Ghidra, Binary Ninja](https://dogbolt.org) (accessibles en ligne)
+  * ChatGPT (pour la Partie 2)
   * Bloc-notes ou fichier `.txt` pour noter vos observations
+
+---
+
+## Prérequis
+
+* Formez une équipe de 4 personnes
 
 ---
 
@@ -43,13 +50,10 @@ Votre mission : **comprendre et révéler tous les secrets du jeu**, à la fois 
 
 ### À observer :
 * Le joueur peut **passer dans certaines cases invisibles**
-  > 🔍 Ce sont des cases avec la valeur `5` dans le tableau (`SECRET`) qui semblent être des chemins normaux.
+  > 🔍 Ce sont des cases ayant la même couleur que les murs, les traverser toutes permet de débloquer un message indiquant "Vous avez découvert toutes les zones secrètes"
 
 * Si on spamme les touches `A`, `B`, etc. → il peut se passer quelque chose
-  > 🔍 Une combinaison très précise déclenche un message (cf. Partie 2)
-
-* Il y a **des messages supplémentaires** dans la console si on explore certaines zones
-  > 🔍 « ✨ Vous avez découvert toutes les zones secrètes ! »
+  > 🔍 Une combinaison très précise déclenche un message (cf. Partie
 
 ---
 
@@ -60,17 +64,17 @@ Questionner les élèves :
 * Certaines touches déclenchent-elles des événements invisibles ?
 * Peut-on imaginer des mécanismes **non accessibles naturellement** ?
 * Peut-on explorer le fichier pour deviner les structures internes ?
+* Certains enchainements de touches provoquent des messages secrets : taper "RICK" dans l'interface de jeu, ou faire le konami code (flèche haut, flèche haut, flèche bas, flèche bas, flèche gauche, flèche droite, flèche gauche, flèche droite, b, a) provoquent des textes cachés.
 
 ---
 
-# 🕵️ Partie 2 – Analyse statique avec Ghidra
+# 🕵️ Partie 2 – Analyse statique avec Ghidra / Binary Ninja
 
 ## 🛠️ Étape 1 : Importer le binaire
 
-1. Ouvrez **Ghidra**.
-2. Créez un projet.
-3. Importez le binaire du jeu.
-4. Lancez l’analyse automatique (`YES` à toutes les options par défaut).
+1. Ouvrez [**Dogbolt**](https://dogbolt.org).
+2. Importez le binaire du jeu.
+3. Regardez les options, cochez Binary Ninja et Ghidra (surtout) car ils seront les plus bavards.
 
 ---
 
@@ -82,12 +86,13 @@ Repérez :
 * Les chaînes de caractères visibles (`Window`, `Maze`, `Félicitations`, etc.)
 * Les **fonctions non appelées**
   * `secretEnding` ?
-  * `debugMode` ?
+  * `ultraSecretEnding` ?
 
 * Les **variables globales** :
   * `hiddenScore` ?
   * `hiddenMessage` ?
   * `konamiUnlocked` ?
+  * `developerMode` ?
 
 ### Chaînes visibles :
 * `"Maze Game"`, `"Félicitations"`, `"Vous avez découvert toutes les zones secrètes !"`
@@ -101,6 +106,8 @@ Repérez :
   > 🔍 Peut être affichée en modifiant le code ou via Ghidra
 * `konamiUnlocked`
   > 🔍 Booléen modifié si la bonne séquence est jouée
+* `developerMode`
+  > 🔍 Variable basée sur les variables d'env, affiche un message si la valeur est à 42.
 
 ---
 
