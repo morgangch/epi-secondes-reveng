@@ -40,21 +40,32 @@ jobs:
       #        Linux         #
       ########################
 
-      - name: Install dependencies (Linux)
+      - name: Download and extract static SFML Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libsfml-dev
+          curl -LO https://www.sfml-dev.org/files/SFML-2.6.2-linux-gcc-64-bit.tar.gz
+          mkdir sfml
+          tar -xzf SFML-2.6.2-linux-gcc-64-bit.tar.gz -C sfml --strip-components=1
+          echo "SFML_STATIC_PATH=$(pwd)/sfml" >> $GITHUB_ENV
 
-      - name: Build (Linux)
+
+      - name: Build (Linux, static SFML)
         if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p ${{ env.BUILD_DIR }}
           g++ -std=c++17 -O2 \
+            -I$SFML_STATIC_PATH/include \
+            -L$SFML_STATIC_PATH/lib \
             -o ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }} \
             ${{ env.SRC }} \
-            -lsfml-graphics -lsfml-window -lsfml-system \
-            -g3
+            -Wl,-Bstatic -lsfml-graphics -lsfml-window -lsfml-system \
+            -Wl,-Bdynamic -lfreetype -lGL -lX11 -lXrandr -lXcursor -lXinerama -lXi -lXext -lXrender -pthread -ldl -lm \
+            -static-libgcc -static-libstdc++
+
+      - name: Check dynamic dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ldd ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }} || true
 
       - name: Copy font file (Linux)
         if: matrix.os == 'ubuntu-latest'
