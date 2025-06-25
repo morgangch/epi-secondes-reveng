@@ -48,7 +48,6 @@ jobs:
           tar -xzf SFML-2.6.2-linux-gcc-64-bit.tar.gz -C sfml --strip-components=1
           echo "SFML_STATIC_PATH=$(pwd)/sfml" >> $GITHUB_ENV
 
-
       - name: Build (Linux, static SFML)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -103,6 +102,15 @@ jobs:
             -lsfml-graphics -lsfml-window -lsfml-system \
             -g3
 
+      - name: Copy SFML dylibs (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cp $SFML_PATH/lib/*.dylib ${{ env.BUILD_DIR }}/
+      - name: Adjust rpath for dylibs (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          chmod +w ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}
+          install_name_tool -add_rpath "@executable_path" ${{ env.BUILD_DIR }}/${{ matrix.artifact_name }}
       - name: Copy font file (macOS)
         if: matrix.os == 'macos-latest'
         run: |
